@@ -9,6 +9,8 @@ import imghdr
 import re
 import signal
 import urllib
+import tempfile
+import os
 
 __version__ = '0.2'
 
@@ -59,7 +61,11 @@ class BashKernel(Kernel):
 
         interrupted = False
         try:
-            output = self.bashwrapper.run_command("odpscmd -e '" + code.rstrip() + "'", timeout=None)
+            tmp_fd, tmp_path = tempfile.mkstemp()
+            os.write(tmp_fd, code.rstrip().encode('UTF-8'))
+            os.close(tmp_fd)
+            output = self.bashwrapper.run_command('odpscmd --config=odps_config.ini -f ' + tmp_path, timeout=None)
+            os.remove(tmp_path)
         except KeyboardInterrupt:
             self.bashwrapper.child.sendintr()
             interrupted = True

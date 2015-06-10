@@ -8,4 +8,4 @@ then
 fi
 
 export PYTHONPATH=`pwd`
-ipython notebook --kernel odpscmd
+ipython notebook
