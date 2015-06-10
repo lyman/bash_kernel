@@ -5,11 +5,10 @@ import json
 import os
 import sys
 
-kernel_json = {"argv":[sys.executable,"-m","bash_kernel", "-f", "{connection_file}"],
- "display_name":"Bash",
- "language":"bash",
- "codemirror_mode":"shell",
- "env":{"PS1": "$"}
+kernel_json = {"argv":[sys.executable,"-m","odpscmd_kernel", "-f", "{connection_file}"],
+ "display_name":"odpscmd",
+ "language":"odpscmd",
+ "codemirror_mode":"shell"
 }
 
 class install_with_kernelspec(install):
@@ -27,7 +26,7 @@ class install_with_kernelspec(install):
             # TODO: Copy resources once they're specified
 
             log.info('Installing IPython kernel spec')
-            install_kernel_spec(td, 'bash', user=self.user, replace=True)
+            install_kernel_spec(td, 'odpscmd', user=self.user, replace=True)
 
 with open('README.rst') as f:
     readme = f.read()
@@ -37,14 +36,14 @@ if svem_flag in sys.argv:
     # Die, setuptools, die.
     sys.argv.remove(svem_flag)
 
-setup(name='bash_kernel',
-      version='0.3',
-      description='A bash kernel for IPython',
+setup(name='odpscmd_kernel',
+      version='0.1',
+      description='odpscmd kernel for IPython',
       long_description=readme,
-      author='Thomas Kluyver',
-      author_email='thomas@kluyver.me.uk',
-      url='https://github.com/takluyver/bash_kernel',
-      packages=['bash_kernel'],
+      author='Li Ruibo',
+      author_email='lymanrb@gmail.com',
+      url='https://github.com/lyman/bash_kernel',
+      packages=['odpscmd_kernel'],
       cmdclass={'install': install_with_kernelspec},
       install_requires=['pexpect>=3.3'],
       classifiers = [

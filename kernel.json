@@ -1,0 +1,7 @@
+{
+    "argv" : [
+        "python", "-m", "odpscmd_kernel", "-f", "{connection_file}" ],
+    "display_name" : "odpscmd",
+    "language" : "odpscmd",
+    "codemirror_mode" : "shell"
+}

@@ -12,12 +12,7 @@ import urllib
 
 __version__ = '0.2'
 
-version_pat = re.compile(r'version (\d+(\.\d+)+)')
-
-from .images import (
-    extract_image_filenames, display_data_for_image, image_setup_cmd
-)
-
+version_pat = re.compile(r'MavenVersion (\d+(\.\d+)+)')
 
 class BashKernel(Kernel):
     implementation = 'bash_kernel'
@@ -33,7 +28,7 @@ class BashKernel(Kernel):
     @property
     def banner(self):
         if self._banner is None:
-            self._banner = check_output(['bash', '--version']).decode('utf-8')
+            self._banner = check_output(['odpscmd', '--version']).decode('utf-8')
         return self._banner
 
     language_info = {'name': 'bash',
@@ -56,9 +51,6 @@ class BashKernel(Kernel):
         finally:
             signal.signal(signal.SIGINT, sig)
 
-        # Register Bash function to write image data to temporary file
-        self.bashwrapper.run_command(image_setup_cmd)
-
     def do_execute(self, code, silent, store_history=True,
                    user_expressions=None, allow_stdin=False):
         if not code.strip():
@@ -67,7 +59,7 @@ class BashKernel(Kernel):
 
         interrupted = False
         try:
-            output = self.bashwrapper.run_command(code.rstrip(), timeout=None)
+            output = self.bashwrapper.run_command("odpscmd -e '" + code.rstrip() + "'", timeout=None)
         except KeyboardInterrupt:
             self.bashwrapper.child.sendintr()
             interrupted = True
@@ -78,21 +70,9 @@ class BashKernel(Kernel):
             self._start_bash()
 
         if not silent:
-            image_filenames, output = extract_image_filenames(output)
-
             # Send standard output
             stream_content = {'name': 'stdout', 'text': output}
             self.send_response(self.iopub_socket, 'stream', stream_content)
-
-            # Send images, if any
-            for filename in image_filenames:
-                try:
-                    data = display_data_for_image(filename)
-                except ValueError as e:
-                    message = {'name': 'stdout', 'text': str(e)}
-                    self.send_response(self.iopub_socket, 'stream', message)
-                else:
-                    self.send_response(self.iopub_socket, 'display_data', data)
 
         if interrupted:
             return {'status': 'abort', 'execution_count': self.execution_count}
@@ -138,7 +118,7 @@ class BashKernel(Kernel):
             cmd = 'compgen -cdfa %s' % token
             output = self.bashwrapper.run_command(cmd).rstrip()
             matches.extend(output.split())
-            
+
         if not matches:
             return default
         matches = [m for m in matches if m.startswith(token)]
@@ -146,5 +126,3 @@ class BashKernel(Kernel):
         return {'matches': sorted(matches), 'cursor_start': start,
                 'cursor_end': cursor_pos, 'metadata': dict(),
                 'status': 'ok'}
-
-
