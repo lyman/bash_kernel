@@ -28,7 +28,7 @@ class install_with_kernelspec(install):
             log.info('Installing IPython kernel spec')
             install_kernel_spec(td, 'odpscmd', user=self.user, replace=True)
 
-with open('README.rst') as f:
+with open('README.md') as f:
     readme = f.read()
 
 svem_flag = '--single-version-externally-managed'
@@ -49,7 +49,7 @@ setup(name='odpscmd_kernel',
       classifiers = [
           'Framework :: IPython',
           'License :: OSI Approved :: BSD License',
-          'Programming Language :: Python :: 3',
+          'Programming Language :: Python :: 2.7',
           'Topic :: System :: Shells',
       ]
 )
