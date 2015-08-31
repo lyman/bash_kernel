@@ -17,7 +17,7 @@ __version__ = '0.2'
 version_pat = re.compile(r'MavenVersion (\d+(\.\d+)+)')
 
 class BashKernel(Kernel):
-    implementation = 'bash_kernel'
+    implementation = 'odpscmd_kernel'
     implementation_version = __version__
 
     @property
@@ -33,13 +33,23 @@ class BashKernel(Kernel):
             self._banner = check_output(['odpscmd', '--version']).decode('utf-8')
         return self._banner
 
-    language_info = {'name': 'bash',
+    language_info = {'name': 'odps',
                      'codemirror_mode': 'shell',
                      'mimetype': 'text/x-sh',
                      'file_extension': '.sh'}
 
     def __init__(self, **kwargs):
         Kernel.__init__(self, **kwargs)
+
+        # prepare keywords for auto-completion
+        self.keywords = []
+        try:
+            keywords_file = open("keywords.txt", "r")
+            self.keywords = keywords_file.read().split()
+            keywords_file.close()
+        except:
+            pass
+
         self._start_bash()
 
     def _start_bash(self):
@@ -112,22 +122,7 @@ class BashKernel(Kernel):
         token = tokens[-1]
         start = cursor_pos - len(token)
 
-        if token[0] == '$':
-            # complete variables
-            cmd = 'compgen -A arrayvar -A export -A variable %s' % token[1:] # strip leading $
-            output = self.bashwrapper.run_command(cmd).rstrip()
-            completions = set(output.split())
-            # append matches including leading $
-            matches.extend(['$'+c for c in completions])
-        else:
-            # complete functions and builtins
-            cmd = 'compgen -cdfa %s' % token
-            output = self.bashwrapper.run_command(cmd).rstrip()
-            matches.extend(output.split())
-
-        if not matches:
-            return default
-        matches = [m for m in matches if m.startswith(token)]
+        matches = [m for m in self.keywords if m.startswith(token.upper())]
 
         return {'matches': sorted(matches), 'cursor_start': start,
                 'cursor_end': cursor_pos, 'metadata': dict(),
